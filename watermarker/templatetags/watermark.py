@@ -10,6 +10,7 @@ from django.conf import settings
 from django import template
 from watermarker import utils
 from watermarker.models import Watermark
+from django.utils.encoding import smart_str
 
 register = template.Library()
 
@@ -94,10 +95,11 @@ class Watermarker(object):
             log.error('Watermark "%s" does not exist... Bailing out.' % name)
             return url
 
-        # make sure URL is a string
-        url = str(url)
+        # make sure URL is a unicode string
+        url = unicode(url)
 
         basedir = '%s/watermarked' % os.path.dirname(url)
+        basedir = basedir.replace(settings.DIRNAME, '')
         base, ext = os.path.splitext(os.path.basename(url))
 
         # open the target image file along with the watermark image
@@ -149,17 +151,19 @@ class Watermarker(object):
         if os.access(wm_path, os.R_OK):
             # see if the Watermark object was modified since the file was
             # created
-            
+
             modified = datetime.fromtimestamp(os.path.getmtime(wm_path))
-            
+
             try:
-                from pytz import UTC
-                modified = UTC.localize(modified)
+                #from pytz import UTC
+                #modified = UTC.localize(modified)
+                pass
             except ImportError:
                 pass
 
             # only return the old file if things appear to be the same
-            if modified >= watermark.date_updated:
+            updated = watermark.date_updated
+            if modified >= updated:
                 log.info('Watermark exists and has not changed.  Bailing out.')
                 return wm_url
 
@@ -207,7 +211,7 @@ class Watermarker(object):
     def watermark_path(self, basedir, base, ext, wm_name, obscure=True):
         """Determines an appropriate watermark path"""
 
-        hash = sha1(wm_name).hexdigest()
+        hash = sha1(smart_str(wm_name)).hexdigest()
 
         # figure out where the watermark would be saved on the filesystem
         if obscure:
