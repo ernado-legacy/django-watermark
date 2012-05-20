@@ -155,9 +155,8 @@ class Watermarker(object):
             modified = datetime.fromtimestamp(os.path.getmtime(wm_path))
 
             try:
-                #from pytz import UTC
-                #modified = UTC.localize(modified)
-                pass
+                from pytz import UTC
+                modified = UTC.localize(modified)
             except ImportError:
                 pass
 
