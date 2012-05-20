@@ -149,7 +149,14 @@ class Watermarker(object):
         if os.access(wm_path, os.R_OK):
             # see if the Watermark object was modified since the file was
             # created
+            
             modified = datetime.fromtimestamp(os.path.getmtime(wm_path))
+            
+            try:
+                from pytz import UTC
+                modified = UTC.localize(modified)
+            except ImportError:
+                pass
 
             # only return the old file if things appear to be the same
             if modified >= watermark.date_updated:
