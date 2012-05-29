@@ -115,6 +115,9 @@ def determine_position(position, img, mark):
         XxY: absolute positioning on both the X and Y axes
     """
 
+    left = 0
+    top = 0
+
     max_left = max(img.size[0] - mark.size[0], 0)
     max_top = max(img.size[1] - mark.size[1], 0)
 
@@ -161,7 +164,7 @@ def determine_position(position, img, mark):
             else:
                 top = _int(top)
 
-    return (left, top)
+    return int(left), int(top)
 
 def watermark(img, mark, position=(0, 0), opacity=1, scale=1.0, tile=False, greyscale=False, rotation=0, return_name=False, **kwargs):
     """
@@ -179,16 +182,16 @@ def watermark(img, mark, position=(0, 0), opacity=1, scale=1.0, tile=False, grey
         mark = mark.convert('LA')
 
     rotation = determine_rotation(rotation, mark)
-    if rotation != 0:
+    if rotation:
         # give some leeway for rotation overlapping
-        new_w = mark.size[0] * 1.5
-        new_h = mark.size[1] * 1.5
+        new_w = int(mark.size[0] * 1.5)
+        new_h = int(mark.size[1] * 1.5)
 
         new_mark = Image.new('RGBA', (new_w, new_h), (0,0,0,0))
 
         # center the watermark in the newly resized image
-        new_l = (new_w - mark.size[0]) / 2
-        new_t = (new_h - mark.size[1]) / 2
+        new_l = int((new_w - mark.size[0]) / 2)
+        new_t = int((new_h - mark.size[1]) / 2)
         new_mark.paste(mark, (new_l, new_t))
 
         mark = new_mark.rotate(rotation)
@@ -199,14 +202,14 @@ def watermark(img, mark, position=(0, 0), opacity=1, scale=1.0, tile=False, grey
         img = img.convert('RGBA')
 
     # make sure we have a tuple for a position now
-    assert isinstance(position, tuple), 'Invalid position "%s"!' % position
+    assert isinstance(position, tuple), 'Invalid position "{0:>s}"!'.format(position)
 
     # create a transparent layer the size of the image and draw the
     # watermark in that layer.
     layer = Image.new('RGBA', img.size, (0,0,0,0))
     if tile:
-        first_y = position[1] % mark.size[1] - mark.size[1]
-        first_x = position[0] % mark.size[0] - mark.size[0]
+        first_y = int(position[1] % mark.size[1] - mark.size[1])
+        first_x = int(position[0] % mark.size[0] - mark.size[0])
 
         for y in range(first_y, img.size[1], mark.size[1]):
             for x in range(first_x, img.size[0], mark.size[0]):
@@ -240,6 +243,7 @@ def test():
                 opacity=0.2,
                 scale=2,
                 rotation=30).save('test4.png')
+    print 'Test completed'
 
 if __name__ == '__main__':
     test()
